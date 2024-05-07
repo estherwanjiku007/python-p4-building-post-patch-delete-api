@@ -19,55 +19,58 @@ db.init_app(app)
 def index():
     return "Index for Game/Review/User API"
 
-@app.route("/reviews/<int:id>",methods=["GET","DELETE"])
+# @app.route("/reviews/<int:id>",methods=["GET","DELETE"])
+# def review_by_id(id):
+#     review=Review.query.filter(Review.id==id).first()
+#     if request.method=="GET":
+#         review_dict=review.to_dict()
+#         return make_response(review_dict,200)
+#     elif request.method=="DELETE":
+#         db.session.delete(review)
+#         db.session.commit()
+#         res_dict={
+#             "delete_successful": True,
+#             "message": "Review deleted."
+#         }
+#         return make_response(res_dict,200)
+@app.route("/reviews/<int:id>",methods=["DELETE","GET","PATCH"])
 def review_by_id(id):
     review=Review.query.filter(Review.id==id).first()
     if request.method=="GET":
-        review_dict=review.to_dict()
-        return make_response(review_dict,200)
+        return make_response(review.to_dict(),200)
     elif request.method=="DELETE":
         db.session.delete(review)
         db.session.commit()
-        res_dict={
+        response_body = {
             "delete_successful": True,
             "message": "Review deleted."
         }
-        return make_response(res_dict,200)
-
-@app.route("/reviews",methods=["GET","POST","PATCH"])
-def get_all_reviews():
-    if request.method=="GET":
-        reviews=[]
-        for review in Review.query.all():
-         reviews.append(review.to_dict())
-        return make_response(reviews,200)
-    elif request.method=="POST":
-        new_review=Review(
-           score=request.form.get("score") ,
-           comment=request.form.get("comment"),
-           user_id=request.form.get("user_id"),
-           game_id=request.form.get("game_id")
-        )
-        db.session.add(new_review)
-        db.session.commit()
-        review_dict=new_review.to_dict()
-        return make_response(review_dict,201)
+        return make_response(response_body,200)
+    
     elif request.method=="PATCH":
         for attr in request.form:
             setattr(review,attr,request.form.get(attr))
-            db.session.add(review)
-            db.session.commit()
-            return make_response(review.to_dict,200)
-
-
-
-
-
-
-
-
-
-# @app.route('/games')
+        db.session.add(review)
+        db.session.commit()
+        return make_response(review.to_dict(),200)
+@app.route("/reviews",methods=["GET","POST"])
+def reviews():
+    if request.method=="GET":
+        reviews=[]
+        for review in Review.query.all():
+            reviews.append(review.to_dict())
+        return make_response(reviews,200)
+    elif request.method=="POST":
+        new_review=Review(
+            score=request.get_json["score"],
+            comment=request.get_json["comment"],
+            game_id=request.get_json["game_id"],
+            user_id=request.get_json["user_id"]
+        )
+        db.session.add(new_review)
+        db.session.commit()
+        return make_response(new_review.to_dict(),201)
+# @app.route('/games')re
 # def games():
 
 #     games = []
